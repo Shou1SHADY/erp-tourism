@@ -21,6 +21,7 @@ import { z } from "zod";
 
 export default function Bookings() {
   const { data: bookings, isLoading } = useBookings();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -159,7 +160,7 @@ function CreateBookingDialog({ open, onOpenChange }: { open: boolean, onOpenChan
   const handleTourChange = (tourId: string) => {
     const tour = tours?.find(t => t.id === parseInt(tourId));
     if (tour) {
-      const headCount = form.getValues('headCount');
+      const headCount = form.getValues('headCount') || 1;
       form.setValue('totalAmount', tour.basePrice * headCount);
     }
   };
