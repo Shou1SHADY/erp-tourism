@@ -19,44 +19,72 @@ const TourCard = memo(({ tour, onEdit }: { tour: Tour; onEdit: (tour: Tour) => v
   const imageUrl = tour.images?.[0] || `https://images.unsplash.com/photo-1500622240331-50e5884ba956?auto=format&fit=crop&q=80&w=800`;
 
   return (
-    <div className="group flex flex-col bg-card border border-border/50 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-      <div className="h-48 bg-muted relative overflow-hidden">
+    <div className="group flex flex-col bg-card border border-border/40 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300">
+      {/* Image Container */}
+      <div className="h-44 sm:h-48 bg-muted relative overflow-hidden">
         <img
           src={imageUrl}
           alt={tour.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-          <h3 className="text-xl font-bold text-white font-display line-clamp-1">{tour.title}</h3>
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+        {/* Status Badge */}
+        <div className="absolute top-3 right-3">
+          <span className={cn(
+            "px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider backdrop-blur-sm",
+            tour.isActive
+              ? "bg-emerald-500/90 text-white"
+              : "bg-slate-500/90 text-white"
+          )}>
+            {tour.isActive ? 'Active' : 'Inactive'}
+          </span>
+        </div>
+
+        {/* Title on Image */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+          <h3 className="text-lg sm:text-xl font-bold text-white font-display line-clamp-2 leading-tight drop-shadow-lg">
+            {tour.title}
+          </h3>
         </div>
       </div>
 
-      <div className="p-6 flex-1 flex flex-col">
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            <span>{tour.durationDays} Days</span>
+      {/* Content */}
+      <div className="p-4 sm:p-5 flex-1 flex flex-col">
+        {/* Meta Info */}
+        <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground mb-3">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-secondary/80 rounded-full">
+            <Clock className="h-3.5 w-3.5 text-primary" />
+            <span className="font-medium">{tour.durationDays} Days</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            <span>Max {tour.capacity}</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-secondary/80 rounded-full">
+            <Users className="h-3.5 w-3.5 text-primary" />
+            <span className="font-medium">Max {tour.capacity}</span>
           </div>
         </div>
 
-        <p className="text-muted-foreground text-sm line-clamp-3 mb-6 flex-1">
+        {/* Description */}
+        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2 mb-4 flex-1">
           {tour.description}
         </p>
 
-        <div className="flex items-center justify-between pt-4 border-t border-border/50">
-          <div className="flex items-baseline gap-1">
-            <span className="text-lg font-bold text-primary">${(tour.basePrice / 100).toLocaleString()}</span>
-            <span className="text-xs text-muted-foreground">/ person</span>
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-3 border-t border-border/40">
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">From</span>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-xl sm:text-2xl font-bold text-primary font-display">
+                ${(tour.basePrice / 100).toLocaleString()}
+              </span>
+              <span className="text-xs text-muted-foreground">/person</span>
+            </div>
           </div>
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
-            className="rounded-lg"
+            className="rounded-xl shadow-md shadow-primary/20 hover:shadow-primary/30 transition-shadow"
             onClick={() => onEdit(tour)}
           >
             Edit Details
@@ -66,6 +94,7 @@ const TourCard = memo(({ tour, onEdit }: { tour: Tour; onEdit: (tour: Tour) => v
     </div>
   );
 });
+
 
 TourCard.displayName = "TourCard";
 

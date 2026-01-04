@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, Plus, MoreHorizontal, FileDown } from "lucide-react";
+import { Search, Plus, MoreHorizontal, FileDown, CalendarDays, User, MapPin, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -61,37 +61,37 @@ export default function Bookings() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
       <PageHeader title="Bookings" description="Manage reservations and travel schedules">
-        <div className="flex flex-wrap items-center gap-3">
-          <Button onClick={handleExport} variant="outline" className="gap-2">
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          <Button onClick={handleExport} variant="outline" className="gap-2 shadow-sm order-2 sm:order-1 flex-1 sm:flex-none">
             <FileDown className="h-4 w-4" />
             <span className="hidden sm:inline">Export</span>
           </Button>
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-[200px] order-1 sm:order-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search ID..."
+              placeholder="Search by ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
+              className="pl-9 bg-card"
             />
           </div>
           <CreateBookingDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
         </div>
       </PageHeader>
 
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-border/50 bg-card shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader className="bg-muted/50">
-              <TableRow>
-                <TableHead className="w-[100px]">ID</TableHead>
-                <TableHead>Tour</TableHead>
+            <TableHeader className="bg-muted/30">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-[80px]">ID</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Travel Date</TableHead>
-                <TableHead>Travelers</TableHead>
-                <TableHead>Total Amount</TableHead>
+                <TableHead>Tour</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Guests</TableHead>
+                <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -99,39 +99,63 @@ export default function Bookings() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">Loading bookings...</TableCell>
+                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      Loading bookings...
+                    </div>
+                  </TableCell>
                 </TableRow>
               ) : filteredBookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No bookings found</TableCell>
+                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">No bookings found</TableCell>
                 </TableRow>
               ) : (
                 filteredBookings.map((booking) => (
-                  <TableRow key={booking.id} className="hover:bg-muted/30 transition-colors whitespace-nowrap">
-                    <TableCell className="font-medium">#{booking.id}</TableCell>
-                    <TableCell className="text-primary font-medium">#{booking.tourId}</TableCell>
-                    <TableCell>#{booking.customerId}</TableCell>
-                    <TableCell>{format(new Date(booking.travelDate), 'MMM d, yyyy')}</TableCell>
-                    <TableCell>{booking.headCount || 0}</TableCell>
-                    <TableCell>${(booking.totalAmount / 100).toLocaleString()}</TableCell>
+                  <TableRow key={booking.id} className="cursor-pointer hover:bg-muted/30 transition-colors whitespace-nowrap" onClick={() => handleViewDetails(booking)}>
+                    <TableCell className="font-medium text-muted-foreground">#{booking.id}</TableCell>
                     <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="font-medium">Customer #{booking.customerId}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span>Tour #{booking.tourId}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <CalendarDays className="h-4 w-4" />
+                        {format(new Date(booking.travelDate), 'MMM d, yyyy')}
+                      </div>
+                    </TableCell>
+                    <TableCell>{booking.headCount}</TableCell>
+                    <TableCell className="font-medium">
+                      ${(booking.totalAmount / 100).toLocaleString()}
+                    </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <Badge variant="outline" className={
-                        booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200' :
+                        booking.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                           booking.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                            booking.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-200' :
+                            booking.status === 'cancelled' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                               'bg-slate-50 text-slate-700 border-slate-200'
                       }>
                         {booking.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="w-[160px]">
                           <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
                             View Details
                           </DropdownMenuItem>
@@ -140,7 +164,7 @@ export default function Bookings() {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            className="text-destructive"
+                            className="text-destructive focus:text-destructive focus:bg-destructive/10"
                             onClick={() => handleCancelBooking(booking)}
                           >
                             Cancel Booking
@@ -186,61 +210,85 @@ function BookingDetailDialog({ booking, open, onOpenChange }: { booking: Booking
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] w-[95vw] rounded-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl">Booking Details</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="font-display text-2xl">Booking Details</DialogTitle>
+            <Badge variant="outline" className={
+              booking.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                booking.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                  'bg-slate-50 text-slate-700 border-slate-200'
+            }>
+              {booking.status}
+            </Badge>
+          </div>
         </DialogHeader>
-        <div className="space-y-6 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase font-semibold">Booking ID</p>
-              <p className="font-medium">#{booking.id}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase font-semibold">Status</p>
-              <Badge variant="outline" className={
-                booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200' :
-                  booking.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                    'bg-slate-50 text-slate-700 border-slate-200'
-              }>
-                {booking.status}
-              </Badge>
-            </div>
-          </div>
 
-          <div className="space-y-1 p-3 bg-muted/30 rounded-lg">
-            <p className="text-xs text-muted-foreground uppercase font-semibold">Tour Information</p>
-            <p className="font-medium text-lg">{tour?.title || `Tour #${booking.tourId}`}</p>
-            <p className="text-sm text-muted-foreground">{tour?.durationDays} days | {tour?.currency} {(tour?.basePrice ? tour.basePrice / 100 : 0).toLocaleString()} per person</p>
-          </div>
-
-          <div className="space-y-1 p-3 bg-muted/30 rounded-lg">
-            <p className="text-xs text-muted-foreground uppercase font-semibold">Customer Details</p>
-            <p className="font-medium text-lg">{customer?.fullName || `Customer #${booking.customerId}`}</p>
-            <p className="text-sm text-muted-foreground">{customer?.email} | {customer?.phone}</p>
-            {customer?.nationality && <p className="text-sm text-muted-foreground">Nationality: {customer.nationality}</p>}
+        <div className="space-y-6 py-2">
+          {/* Main Info Card */}
+          <div className="p-4 bg-muted/30 rounded-xl space-y-4 border border-border/50">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Total Amount</p>
+                <p className="text-3xl font-bold text-primary font-display">
+                  ${(booking.totalAmount / 100).toLocaleString()}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-muted-foreground mb-1">Booking ID</p>
+                <p className="font-mono text-sm bg-background px-2 py-1 rounded border">#{booking.id}</p>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase font-semibold">Travel Date</p>
+            <div className="space-y-1.5 p-3 rounded-xl border border-border/50 hover:bg-muted/20 transition-colors">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <CalendarDays className="h-4 w-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">Travel Date</span>
+              </div>
               <p className="font-medium">{format(new Date(booking.travelDate), 'MMMM d, yyyy')}</p>
             </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase font-semibold">Travelers</p>
+            <div className="space-y-1.5 p-3 rounded-xl border border-border/50 hover:bg-muted/20 transition-colors">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <User className="h-4 w-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">Travelers</span>
+              </div>
               <p className="font-medium">{booking.headCount} guests</p>
             </div>
           </div>
 
-          <div className="space-y-1 pt-4 border-t">
-            <div className="flex justify-between items-end">
-              <p className="text-xs text-muted-foreground uppercase font-semibold">Total Amount Paid</p>
-              <p className="text-2xl font-bold text-primary">${(booking.totalAmount / 100).toLocaleString()}</p>
+          <div className="space-y-4">
+            <div className="flex items-start gap-4 p-3 rounded-xl border border-border/50 hover:bg-muted/20 transition-colors">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <MapPin className="h-5 w-5 text-primary" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tour Package</p>
+                <p className="font-medium">{tour?.title || `Tour #${booking.tourId}`}</p>
+                <p className="text-sm text-muted-foreground">
+                  {tour?.durationDays} days • {tour?.currency} {(tour?.basePrice ? tour.basePrice / 100 : 0).toLocaleString()} pp
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-3 rounded-xl border border-border/50 hover:bg-muted/20 transition-colors">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <User className="h-5 w-5 text-primary" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Customer</p>
+                <p className="font-medium">{customer?.fullName || `Customer #${booking.customerId}`}</p>
+                <p className="text-sm text-muted-foreground">{customer?.email}</p>
+                <p className="text-sm text-muted-foreground">{customer?.phone}</p>
+              </div>
             </div>
           </div>
 
           {booking.notes && (
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase font-semibold">Special Requests</p>
-              <p className="text-sm p-3 bg-amber-50/50 rounded-lg border border-amber-100">{booking.notes}</p>
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Special Requests</p>
+              <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-100 text-sm text-amber-900 leading-relaxed">
+                {booking.notes}
+              </div>
             </div>
           )}
         </div>
@@ -490,7 +538,7 @@ function CreateBookingDialog({ open, onOpenChange }: { open: boolean, onOpenChan
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button className="gap-2 shadow-lg shadow-primary/25">
+        <Button className="gap-2 shadow-lg shadow-primary/25 order-3 flex-1 sm:flex-none">
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline">New Booking</span>
           <span className="sm:hidden">New</span>
