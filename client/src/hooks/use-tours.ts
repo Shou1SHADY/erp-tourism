@@ -38,7 +38,7 @@ export function useCreateTour() {
         durationDays: Number(data.durationDays),
         capacity: Number(data.capacity),
       };
-      
+
       const validated = api.tours.create.input.parse(payload);
       const res = await fetch(api.tours.create.path, {
         method: api.tours.create.method,
@@ -46,7 +46,7 @@ export function useCreateTour() {
         body: JSON.stringify(validated),
         credentials: "include",
       });
-      
+
       if (!res.ok) {
         if (res.status === 400) {
           const error = api.tours.create.responses[400].parse(await res.json());
@@ -58,6 +58,31 @@ export function useCreateTour() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.tours.list.path] });
+    },
+  });
+}
+
+export function useUpdateTour() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertTour> }) => {
+      const url = buildUrl(api.tours.update.path, { id });
+      const res = await fetch(url, {
+        method: api.tours.update.method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        if (res.status === 404) throw new Error("Tour not found");
+        throw new Error("Failed to update tour");
+      }
+      return api.tours.update.responses[200].parse(await res.json());
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [api.tours.list.path] });
+      queryClient.invalidateQueries({ queryKey: [api.tours.get.path, variables.id] });
     },
   });
 }

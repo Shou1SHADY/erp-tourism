@@ -19,22 +19,22 @@ export default function Customers() {
   const [search, setSearch] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const filteredCustomers = customers?.filter(c => 
-    c.fullName.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredCustomers = customers?.filter(c =>
+    c.fullName.toLowerCase().includes(search.toLowerCase()) ||
     c.email.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <PageHeader title="Customers" description="Manage your client database">
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 min-w-[200px] sm:w-[250px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search customers..." 
+            <Input
+              placeholder="Search customers..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 w-[250px]" 
+              className="pl-9 w-full"
             />
           </div>
           <CreateCustomerDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
@@ -43,7 +43,7 @@ export default function Customers() {
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1,2,3,4,5,6].map(i => <div key={i} className="h-40 bg-muted animate-pulse rounded-2xl" />)}
+          {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-40 bg-muted animate-pulse rounded-2xl" />)}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -52,27 +52,27 @@ export default function Customers() {
               <CardHeader className="flex flex-row items-center gap-4 pb-2">
                 <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
                   <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                    {customer.fullName.split(' ').map(n => n[0]).join('').substring(0,2)}
+                    {customer.fullName.split(' ').map(n => n[0]).join('').substring(0, 2)}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <CardTitle className="text-lg">{customer.fullName}</CardTitle>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{customer.nationality || 'Unknown'}</p>
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="text-lg truncate">{customer.fullName}</CardTitle>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold truncate">{customer.nationality || 'Unknown'}</p>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3 pt-2">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Mail className="h-4 w-4 text-primary/70" />
+                  <Mail className="h-4 w-4 text-primary/70 shrink-0" />
                   <span className="truncate">{customer.email}</span>
                 </div>
                 {customer.phone && (
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <Phone className="h-4 w-4 text-primary/70" />
+                    <Phone className="h-4 w-4 text-primary/70 shrink-0" />
                     <span>{customer.phone}</span>
                   </div>
                 )}
                 {customer.notes && (
-                  <p className="text-xs text-muted-foreground mt-4 italic border-t pt-3">
+                  <p className="text-xs text-muted-foreground mt-4 italic border-t pt-3 line-clamp-2 text-balance">
                     "{customer.notes}"
                   </p>
                 )}
@@ -118,10 +118,11 @@ function CreateCustomerDialog({ open, onOpenChange }: { open: boolean, onOpenCha
       <DialogTrigger asChild>
         <Button className="gap-2 shadow-lg shadow-primary/25">
           <Plus className="h-4 w-4" />
-          Add Customer
+          <span className="hidden sm:inline">Add Customer</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] rounded-2xl">
+      <DialogContent className="sm:max-w-[500px] w-[95vw] rounded-2xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">Add Customer</DialogTitle>
         </DialogHeader>
@@ -138,8 +139,8 @@ function CreateCustomerDialog({ open, onOpenChange }: { open: boolean, onOpenCha
                 </FormItem>
               )}
             />
-            
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="email"

@@ -17,10 +17,9 @@ export default function Dashboard() {
     window.location.href = "/api/bookings/export";
   };
 
-  // Simple analytics calculation
   const totalRevenue = bookings?.reduce((acc, curr) => acc + curr.totalAmount, 0) || 0;
   const activeBookings = bookings?.filter(b => b.status === 'confirmed').length || 0;
-  
+
   const chartData = [
     { name: 'Mon', total: 1200 },
     { name: 'Tue', total: 2100 },
@@ -36,11 +35,12 @@ export default function Dashboard() {
       <PageHeader title="Dashboard" description="Overview of your tourism business">
         <Button onClick={handleExport} className="gap-2">
           <FileDown className="h-4 w-4" />
-          Export Report
+          <span className="hidden sm:inline">Export Report</span>
+          <span className="sm:hidden">Export</span>
         </Button>
       </PageHeader>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Revenue"
           value={`$${(totalRevenue / 100).toLocaleString()}`}
@@ -71,20 +71,20 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-4 rounded-xl border bg-card p-6 shadow-sm">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+        <div className="lg:col-span-4 rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-semibold text-lg">Revenue Overview</h3>
           </div>
-          <div className="h-[300px]">
+          <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="hsl(var(--muted-foreground))" 
-                  fontSize={12} 
-                  tickLine={false} 
+                <XAxis
+                  dataKey="name"
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
@@ -94,7 +94,7 @@ export default function Dashboard() {
                   axisLine={false}
                   tickFormatter={(value) => `$${value}`}
                 />
-                <Tooltip 
+                <Tooltip
                   cursor={{ fill: 'hsl(var(--muted)/0.5)' }}
                   contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
                 />
@@ -104,28 +104,27 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="col-span-3 rounded-xl border bg-card p-6 shadow-sm">
+        <div className="lg:col-span-3 rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-semibold text-lg">Recent Bookings</h3>
           </div>
           <div className="space-y-4">
             {bookings?.slice(0, 5).map((booking) => (
-              <div key={booking.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+              <div key={booking.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors gap-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
                     #{booking.id}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">{format(new Date(booking.travelDate), 'MMM d, yyyy')}</p>
-                    <p className="text-xs text-muted-foreground">{booking.headCount} Travelers</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{format(new Date(booking.travelDate), 'MMM d, yyyy')}</p>
+                    <p className="text-xs text-muted-foreground truncate">{booking.headCount} Travelers</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                    booking.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                    'bg-slate-100 text-slate-700'
-                  }`}>
+                <div className="flex items-center shrink-0">
+                  <span className={`px-2 py-1 rounded-full text-[10px] sm:text-xs font-medium ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                      booking.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                        'bg-slate-100 text-slate-700'
+                    }`}>
                     {booking.status}
                   </span>
                 </div>

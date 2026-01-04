@@ -5,10 +5,10 @@ import * as schema from "@shared/schema";
 const { Pool } = pg;
 
 if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+  console.log("DATABASE_URL not found, running with in-memory storage.");
+} else {
+  console.log(`DATABASE_URL found: ${process.env.DATABASE_URL.substring(0, 10)}..., connecting to database.`);
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle(pool, { schema });
+export const pool = process.env.DATABASE_URL ? new Pool({ connectionString: process.env.DATABASE_URL }) : null;
+export const db = pool ? drizzle(pool, { schema }) : null;

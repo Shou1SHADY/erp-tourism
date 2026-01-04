@@ -35,7 +35,7 @@ export async function registerRoutes(
 
   // PayPal Routes
   app.get("/paypal/setup", async (req, res) => {
-      await loadPaypalDefault(req, res);
+    await loadPaypalDefault(req, res);
   });
 
   app.post("/paypal/order", async (req, res) => {
@@ -112,6 +112,28 @@ export async function registerRoutes(
   });
 
   // Bookings
+  app.get("/api/bookings/export", async (req, res) => {
+    try {
+      const bookings = await storage.getBookings();
+      const tours = await storage.getTours();
+      const customers = await storage.getCustomers();
+
+      const header = "Booking ID,Customer Name,Tour Title,Travel Date,Travelers,Total Amount,Status\n";
+      const rows = bookings.map(b => {
+        const customer = customers.find(c => c.id === b.customerId);
+        const tour = tours.find(t => t.id === b.tourId);
+        return `${b.id},"${customer?.fullName || "Unknown"}","${tour?.title || "Unknown"}",${format(new Date(b.travelDate), "yyyy-MM-dd")},${b.headCount},${(b.totalAmount / 100).toFixed(2)},${b.status}`;
+      }).join("\n");
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", "attachment; filename=bookings_report.csv");
+      res.send(header + rows);
+    } catch (error) {
+      console.error("Export error:", error);
+      res.status(500).json({ message: "Failed to export report" });
+    }
+  });
+
   app.get(api.bookings.list.path, async (req, res) => {
     const bookings = await storage.getBookings();
     res.json(bookings);
@@ -174,28 +196,6 @@ export async function registerRoutes(
     // ... existing seed logic
   });
 
-  // Export Bookings CSV
-  app.get("/api/bookings/export", async (req, res) => {
-    try {
-      const bookings = await storage.getBookings();
-      const tours = await storage.getTours();
-      const customers = await storage.getCustomers();
-
-      const header = "Booking ID,Customer Name,Tour Title,Travel Date,Travelers,Total Amount,Status\n";
-      const rows = bookings.map(b => {
-        const customer = customers.find(c => c.id === b.customerId);
-        const tour = tours.find(t => t.id === b.tourId);
-        return `${b.id},"${customer?.fullName || "Unknown"}","${tour?.title || "Unknown"}",${format(new Date(b.travelDate), "yyyy-MM-dd")},${b.headCount},${(b.totalAmount / 100).toFixed(2)},${b.status}`;
-      }).join("\n");
-
-      res.setHeader("Content-Type", "text/csv");
-      res.setHeader("Content-Disposition", "attachment; filename=bookings_report.csv");
-      res.send(header + rows);
-    } catch (error) {
-      console.error("Export error:", error);
-      res.status(500).json({ message: "Failed to export report" });
-    }
-  });
 
   return httpServer;
 }

@@ -11,11 +11,15 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar({ className, onClose }: { className?: string; onClose?: () => void }) {
   const [location] = useLocation();
 
+  const handleLinkClick = () => {
+    if (onClose) onClose();
+  };
+
   return (
-    <div className="flex h-screen flex-col justify-between border-r bg-card w-64 fixed left-0 top-0 z-40">
+    <div className={cn("flex h-screen flex-col justify-between border-r bg-card w-64", className)}>
       <div className="px-6 py-8">
         <Link href="/" className="flex items-center gap-2 mb-10 group">
           <div className="bg-primary/10 p-2 rounded-lg group-hover:bg-primary/20 transition-colors">
@@ -25,7 +29,7 @@ export function Sidebar() {
             Wanderlust<span className="text-primary">ERP</span>
           </span>
         </Link>
-        
+
         <nav className="flex flex-col gap-2">
           {navigation.map((item) => {
             const isActive = location === item.href;
@@ -33,10 +37,11 @@ export function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={handleLinkClick}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group font-medium text-sm",
-                  isActive 
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" 
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 )}
               >

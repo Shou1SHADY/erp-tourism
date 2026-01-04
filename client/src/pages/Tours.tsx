@@ -1,43 +1,116 @@
-import { useState } from "react";
-import { useTours, useCreateTour } from "@/hooks/use-tours";
+import { useState, useMemo, memo, useEffect } from "react";
+import { useTours, useCreateTour, useUpdateTour } from "@/hooks/use-tours";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, MapPin, Clock, Users, DollarSign, Search } from "lucide-react";
+import { Plus, Clock, Users, Search, Image as ImageIcon, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { insertTourSchema } from "@shared/schema";
+import { insertTourSchema, type Tour } from "@shared/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
+
+const TourCard = memo(({ tour, onEdit }: { tour: Tour; onEdit: (tour: Tour) => void }) => {
+  const imageUrl = tour.images?.[0] || `https://images.unsplash.com/photo-1500622240331-50e5884ba956?auto=format&fit=crop&q=80&w=800`;
+
+  return (
+    <div className="group flex flex-col bg-card border border-border/50 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+      <div className="h-48 bg-muted relative overflow-hidden">
+        <img
+          src={imageUrl}
+          alt={tour.title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+          <h3 className="text-xl font-bold text-white font-display line-clamp-1">{tour.title}</h3>
+        </div>
+      </div>
+
+      <div className="p-6 flex-1 flex flex-col">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+          <div className="flex items-center gap-1">
+            <Clock className="h-4 w-4" />
+            <span>{tour.durationDays} Days</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Users className="h-4 w-4" />
+            <span>Max {tour.capacity}</span>
+          </div>
+        </div>
+
+        <p className="text-muted-foreground text-sm line-clamp-3 mb-6 flex-1">
+          {tour.description}
+        </p>
+
+        <div className="flex items-center justify-between pt-4 border-t border-border/50">
+          <div className="flex items-baseline gap-1">
+            <span className="text-lg font-bold text-primary">${(tour.basePrice / 100).toLocaleString()}</span>
+            <span className="text-xs text-muted-foreground">/ person</span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-lg"
+            onClick={() => onEdit(tour)}
+          >
+            Edit Details
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+TourCard.displayName = "TourCard";
 
 export default function Tours() {
   const { data: tours, isLoading } = useTours();
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingTour, setEditingTour] = useState<Tour | null>(null);
   const [search, setSearch] = useState("");
 
-  const filteredTours = tours?.filter(t => 
-    t.title.toLowerCase().includes(search.toLowerCase()) || 
-    t.description.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredTours = useMemo(() => {
+    if (!tours) return [];
+    return tours.filter(t =>
+      t.title.toLowerCase().includes(search.toLowerCase()) ||
+      t.description.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [tours, search]);
+
+  const handleCreate = () => {
+    setEditingTour(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEdit = (tour: Tour) => {
+    setEditingTour(tour);
+    setIsDialogOpen(true);
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <PageHeader title="Tours" description="Manage your travel packages and destinations">
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 min-w-[200px] sm:w-[300px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search tours..." 
+            <Input
+              placeholder="Search tours..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 w-[200px] md:w-[300px]" 
+              className="pl-9 w-full"
             />
           </div>
-          <CreateTourDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
+          <Button onClick={handleCreate} className="gap-2 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Create Tour</span>
+            <span className="sm:hidden">Create</span>
+          </Button>
         </div>
       </PageHeader>
 
@@ -49,56 +122,41 @@ export default function Tours() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTours?.map((tour) => (
-            <div key={tour.id} className="group flex flex-col bg-card border border-border/50 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              <div className="h-48 bg-muted relative">
-                {/* Placeholder for tour image since we don't have uploads yet */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                  <h3 className="text-xl font-bold text-white font-display">{tour.title}</h3>
-                </div>
-              </div>
-              
-              <div className="p-6 flex-1 flex flex-col">
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{tour.durationDays} Days</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    <span>Max {tour.capacity}</span>
-                  </div>
-                </div>
-                
-                <p className="text-muted-foreground text-sm line-clamp-3 mb-6 flex-1">
-                  {tour.description}
-                </p>
-
-                <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-lg font-bold text-primary">${(tour.basePrice / 100).toLocaleString()}</span>
-                    <span className="text-xs text-muted-foreground">/ person</span>
-                  </div>
-                  <Button variant="outline" size="sm" className="rounded-lg">
-                    Edit Details
-                  </Button>
-                </div>
-              </div>
-            </div>
+          {filteredTours.map((tour) => (
+            <TourCard key={tour.id} tour={tour} onEdit={handleEdit} />
           ))}
         </div>
+      )}
+
+      {isDialogOpen && (
+        <TourDialog
+          tour={editingTour}
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+        />
       )}
     </div>
   );
 }
 
-function CreateTourDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
+function TourDialog({ tour, open, onOpenChange }: { tour: Tour | null; open: boolean, onOpenChange: (open: boolean) => void }) {
   const { toast } = useToast();
   const createTour = useCreateTour();
-  
+  const updateTour = useUpdateTour();
+  const [newImageUrl, setNewImageUrl] = useState("");
+
   const form = useForm<z.infer<typeof insertTourSchema>>({
     resolver: zodResolver(insertTourSchema),
-    defaultValues: {
+    defaultValues: tour ? {
+      title: tour.title,
+      description: tour.description,
+      basePrice: tour.basePrice,
+      durationDays: tour.durationDays,
+      capacity: tour.capacity,
+      currency: tour.currency,
+      isActive: tour.isActive ?? true,
+      images: tour.images || []
+    } : {
       title: "",
       description: "",
       basePrice: 0,
@@ -110,30 +168,41 @@ function CreateTourDialog({ open, onOpenChange }: { open: boolean, onOpenChange:
     }
   });
 
+  const images = form.watch("images") || [];
+
   const onSubmit = (data: z.infer<typeof insertTourSchema>) => {
-    createTour.mutate(data, {
-      onSuccess: () => {
-        toast({ title: "Tour Created", description: "The tour has been successfully added." });
-        onOpenChange(false);
-        form.reset();
-      },
-      onError: (err) => {
-        toast({ title: "Error", description: err.message, variant: "destructive" });
-      }
+    const action = tour ? updateTour.mutateAsync({ id: tour.id, data }) : createTour.mutateAsync(data);
+
+    action.then(() => {
+      toast({
+        title: tour ? "Tour Updated" : "Tour Created",
+        description: `Successfully ${tour ? 'updated' : 'added'} the tour.`
+      });
+      onOpenChange(false);
+    }).catch((err) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     });
+  };
+
+  const addImage = () => {
+    if (!newImageUrl) return;
+    const currentImages = form.getValues("images") || [];
+    if (!currentImages.includes(newImageUrl)) {
+      form.setValue("images", [...currentImages, newImageUrl]);
+    }
+    setNewImageUrl("");
+  };
+
+  const removeImage = (index: number) => {
+    const currentImages = form.getValues("images") || [];
+    form.setValue("images", currentImages.filter((_, i) => i !== index));
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button className="gap-2 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all">
-          <Plus className="h-4 w-4" />
-          Create Tour
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] rounded-2xl">
+      <DialogContent className="sm:max-w-[600px] w-[95vw] rounded-2xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl">Create New Tour</DialogTitle>
+          <DialogTitle className="font-display text-2xl">{tour ? 'Edit Tour' : 'Create New Tour'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
@@ -148,8 +217,8 @@ function CreateTourDialog({ open, onOpenChange }: { open: boolean, onOpenChange:
                 </FormItem>
               )}
             />
-            
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="basePrice"
@@ -174,7 +243,7 @@ function CreateTourDialog({ open, onOpenChange }: { open: boolean, onOpenChange:
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="capacity"
@@ -192,7 +261,7 @@ function CreateTourDialog({ open, onOpenChange }: { open: boolean, onOpenChange:
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Currency</FormLabel>
-                    <FormControl><Input {...field} readOnly /></FormControl>
+                    <FormControl><Input {...field} readOnly className="bg-muted" /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -211,9 +280,46 @@ function CreateTourDialog({ open, onOpenChange }: { open: boolean, onOpenChange:
               )}
             />
 
-            <div className="flex justify-end pt-4">
-              <Button type="submit" disabled={createTour.isPending} className="w-full sm:w-auto">
-                {createTour.isPending ? "Creating..." : "Create Tour"}
+            <div className="space-y-3">
+              <Label>Tour Images</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Paste image URL..."
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addImage(); } }}
+                />
+                <Button type="button" variant="secondary" onClick={addImage}>Add</Button>
+              </div>
+
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-2">
+                {images.map((url, index) => (
+                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden border bg-muted group">
+                    <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 p-1 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                {images.length === 0 && (
+                  <div className="col-span-full py-8 border-2 border-dashed rounded-lg flex flex-col items-center justify-center text-muted-foreground bg-muted/20">
+                    <ImageIcon className="h-8 w-8 mb-2 opacity-20" />
+                    <p className="text-sm">No images added</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 gap-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createTour.isPending || updateTour.isPending} className="flex-1 sm:flex-none">
+                {tour ? 'Update Tour' : 'Create Tour'}
               </Button>
             </div>
           </form>
