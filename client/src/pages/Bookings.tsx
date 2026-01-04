@@ -22,6 +22,8 @@ import { z } from "zod";
 export default function Bookings() {
   const { data: bookings, isLoading } = useBookings();
   const { toast } = useToast();
+  const [search, setSearch] = useState("");
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
