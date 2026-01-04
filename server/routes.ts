@@ -4,12 +4,33 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
+import { getPaymobAuthToken, createPaymobOrder, getPaymentKey, getPaymobIframeUrl } from "./paymob";
 import { insertTourSchema, insertCustomerSchema, insertBookingSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+
+  // Paymob Routes
+  app.post("/api/paymob/setup", async (req, res) => {
+    try {
+      const { amountCents, currency, customer } = req.body;
+      const authToken = await getPaymobAuthToken();
+      const order = await createPaymobOrder(authToken, amountCents, currency);
+      const paymentKey = await getPaymentKey(authToken, order.id, amountCents, currency, {
+        email: customer.email,
+        first_name: customer.firstName,
+        last_name: customer.lastName,
+        phone_number: customer.phone,
+      });
+      const iframeUrl = getPaymobIframeUrl(paymentKey);
+      res.json({ iframeUrl });
+    } catch (err) {
+      console.error("Paymob setup error:", err);
+      res.status(500).json({ message: "Failed to initialize Paymob payment" });
+    }
+  });
 
   // PayPal Routes
   app.get("/paypal/setup", async (req, res) => {
