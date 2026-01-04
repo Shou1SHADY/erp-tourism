@@ -22,12 +22,17 @@ import { z } from "zod";
 export default function Bookings() {
   const { data: bookings, isLoading } = useBookings();
   const { toast } = useToast();
-  const [search, setSearch] = useState("");
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
 
   const filteredBookings = bookings?.filter(b => 
     b.id.toString().includes(search)
   );
+
+  const handleViewDetails = (booking: any) => {
+    setSelectedBooking(booking);
+    setIsViewOpen(true);
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -95,9 +100,7 @@ export default function Bookings() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {
-                          toast({ title: "View Booking", description: `Viewing details for booking #${booking.id}` });
-                        }}>
+                        <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
                           View Details
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
@@ -123,9 +126,92 @@ export default function Bookings() {
           </TableBody>
         </Table>
       </div>
+
+      <BookingDetailDialog 
+        booking={selectedBooking} 
+        open={isViewOpen} 
+        onOpenChange={setIsViewOpen} 
+      />
     </div>
   );
 }
+
+function BookingDetailDialog({ booking, open, onOpenChange }: { booking: any, open: boolean, onOpenChange: (open: boolean) => void }) {
+  const { data: tours } = useTours();
+  const { data: customers } = useCustomers();
+
+  if (!booking) return null;
+
+  const tour = tours?.find(t => t.id === booking.tourId);
+  const customer = customers?.find(c => c.id === booking.customerId);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px] rounded-2xl">
+        <DialogHeader>
+          <DialogTitle className="font-display text-2xl">Booking Details</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-6 py-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground uppercase font-semibold">Booking ID</p>
+              <p className="font-medium">#{booking.id}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground uppercase font-semibold">Status</p>
+              <Badge variant="outline" className={
+                booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200' :
+                booking.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                'bg-slate-50 text-slate-700 border-slate-200'
+              }>
+                {booking.status}
+              </Badge>
+            </div>
+          </div>
+
+          <div className="space-y-1 p-3 bg-muted/30 rounded-lg">
+            <p className="text-xs text-muted-foreground uppercase font-semibold">Tour Information</p>
+            <p className="font-medium text-lg">{tour?.title || `Tour #${booking.tourId}`}</p>
+            <p className="text-sm text-muted-foreground">{tour?.durationDays} days | {tour?.currency} {(tour?.basePrice ? tour.basePrice / 100 : 0).toLocaleString()} per person</p>
+          </div>
+
+          <div className="space-y-1 p-3 bg-muted/30 rounded-lg">
+            <p className="text-xs text-muted-foreground uppercase font-semibold">Customer Details</p>
+            <p className="font-medium text-lg">{customer?.fullName || `Customer #${booking.customerId}`}</p>
+            <p className="text-sm text-muted-foreground">{customer?.email} | {customer?.phone}</p>
+            {customer?.nationality && <p className="text-sm text-muted-foreground">Nationality: {customer.nationality}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground uppercase font-semibold">Travel Date</p>
+              <p className="font-medium">{format(new Date(booking.travelDate), 'MMMM d, yyyy')}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground uppercase font-semibold">Travelers</p>
+              <p className="font-medium">{booking.headCount} guests</p>
+            </div>
+          </div>
+
+          <div className="space-y-1 pt-4 border-t">
+            <div className="flex justify-between items-end">
+              <p className="text-xs text-muted-foreground uppercase font-semibold">Total Amount Paid</p>
+              <p className="text-2xl font-bold text-primary">${(booking.totalAmount / 100).toLocaleString()}</p>
+            </div>
+          </div>
+
+          {booking.notes && (
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground uppercase font-semibold">Special Requests</p>
+              <p className="text-sm p-3 bg-amber-50/50 rounded-lg border border-amber-100">{booking.notes}</p>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 function CreateBookingDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
   const { toast } = useToast();
