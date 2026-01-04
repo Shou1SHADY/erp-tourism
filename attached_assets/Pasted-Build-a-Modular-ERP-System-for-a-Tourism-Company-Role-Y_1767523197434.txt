@@ -1,0 +1,600 @@
+Build a Modular ERP System for a Tourism Company
+
+Role
+
+You are a senior full-stack engineer + system architect.
+
+Build a modular ERP system tailored for a tourism and travel company that manages:
+
+tours
+
+bookings
+
+customers
+
+staff
+
+partners
+
+payments
+
+operations
+
+reporting
+
+This system must be production-ready, extensible, and designed for real business use.
+
+🎯 Business Context
+
+This ERP will be used by:
+
+Tour operators
+
+Sales & reservations team
+
+Operations managers
+
+Finance
+
+Admins
+
+The company offers:
+
+Tours & travel programs
+
+Diving / adventure activities
+
+Multi-day packages
+
+Optional add-ons (transport, guides, equipment)
+
+🧱 Core Modules (Required)
+1️⃣ Authentication & Roles
+
+Login / logout
+
+Role-based access:
+
+Admin
+
+Manager
+
+Sales
+
+Operations
+
+Accountant
+
+Permissions system
+
+2️⃣ Tours & Packages
+
+Create / edit tours
+
+Pricing (base price + seasonal pricing)
+
+Duration
+
+Capacity
+
+Included services
+
+Add-ons
+
+Availability calendar
+
+3️⃣ Booking Management
+
+Create bookings (manual & online)
+
+Booking status:
+
+Pending
+
+Confirmed
+
+Cancelled
+
+Completed
+
+Assign guides / vehicles
+
+Track availability in real-time
+
+4️⃣ Customers (CRM)
+
+Customer profiles
+
+Contact info
+
+Booking history
+
+Notes & preferences
+
+Nationality & passport fields
+
+5️⃣ Staff & Resources
+
+Staff profiles (guides, drivers)
+
+Availability calendar
+
+Assignments per tour
+
+Vehicles & equipment tracking
+
+6️⃣ Payments & Invoicing
+
+Payments:
+
+Cash
+
+Online (Stripe / PayPal ready)
+
+Invoices
+
+Partial payments
+
+Refund handling
+
+Financial summaries
+
+7️⃣ Reports & Analytics
+
+Bookings per period
+
+Revenue per tour
+
+Occupancy rate
+
+Customer trends
+
+Export CSV / Excel
+
+8️⃣ Settings & Admin
+
+Company profile
+
+Currency & taxes
+
+Seasons & pricing rules
+
+Notification templates
+
+🛠️ Tech Stack (Required)
+Frontend
+
+Next.js (App Router)
+
+TypeScript
+
+Tailwind CSS
+
+shadcn/ui
+
+React Hook Form
+
+Zod validation
+
+Backend
+
+Node.js
+
+Express or Next.js API routes
+
+PostgreSQL
+
+Prisma ORM
+
+JWT authentication
+
+Infrastructure
+
+Modular folder structure
+
+Environment variables
+
+Seed data for testing
+
+Ready for cloud deployment
+
+🎨 UI/UX Requirements
+
+Clean admin dashboard
+
+Table-based management views
+
+Filters & search everywhere
+
+Status badges
+
+Dark / light mode
+
+Mobile-friendly admin UI
+
+📂 Project Structure
+
+Use a clean, scalable architecture:
+
+/app
+
+/modules
+
+/components
+
+/lib
+
+/services
+
+/prisma
+
+/auth
+
+Each module must be isolated and reusable.
+
+🔐 Security Requirements
+
+Role-based access control
+
+Input validation
+
+Secure authentication
+
+Protected API routes
+
+📦 Deliverables
+
+Fully working ERP MVP
+
+Seeded database
+
+Example users for each role
+
+Core business flows implemented
+
+Clean, readable code
+
+❌ Constraints
+
+❌ No mock-only UI
+❌ No hardcoded data
+❌ No single-file backend
+❌ No low-effort CRUD only
+
+✅ Success Criteria
+
+The result should feel like:
+
+“A real ERP system that a tourism company can actually use and scale.”
+
+🔁 Next Steps (After MVP)
+
+Prepare code to support:
+
+Multi-branch operations
+
+Multi-currency
+
+Channel manager integrations
+
+Public booking portal
+
+If you want, next I can:
+
+🧩 Break this into Replit step-by-step tasks
+
+🗄️ Design the database schema (Prisma)
+
+📊 Define ERP pricing logic
+
+🌍 Add multi-language support
+
+Just tell me what you want next 🚀
+
+payment using paypal ready and instead of stripe use paymob
+
+Perfect — that’s a very realistic choice, especially for Egypt / MENA tourism companies 👍
+Below is an updated Replit AI prompt, cleanly adjusted to:
+
+✅ PayPal (international payments)
+
+✅ Paymob (local / MENA payments)
+
+❌ No Stripe
+
+You can paste this directly into Replit AI.
+
+🏗️ Replit AI Prompt
+
+Tourism ERP System with PayPal + Paymob Payments
+
+Role
+
+You are a senior full-stack engineer and system architect.
+
+Build a modular ERP system for a tourism and travel company, designed for real production use, not a demo.
+
+🎯 Business Context
+
+The company manages:
+
+Tours & travel packages
+
+Diving / adventure activities
+
+Bookings (online + manual)
+
+Customers (international & local)
+
+Staff, guides, vehicles
+
+Payments, invoices, and reports
+
+The system must support international tourists and local customers.
+
+🧱 Core Modules (Required)
+1️⃣ Authentication & Roles
+
+Secure login / logout
+
+Role-based access:
+
+Admin
+
+Manager
+
+Sales
+
+Operations
+
+Accountant
+
+Permission guards on UI and APIs
+
+2️⃣ Tours & Packages
+
+Tour creation & editing
+
+Base pricing + seasonal pricing
+
+Capacity limits
+
+Add-ons (equipment, transport, meals)
+
+Availability calendar
+
+3️⃣ Booking Management
+
+Create bookings:
+
+Manual (admin/sales)
+
+Online (future-ready)
+
+Booking lifecycle:
+
+Pending
+
+Confirmed
+
+Paid
+
+Cancelled
+
+Completed
+
+Assign guides, vehicles, equipment
+
+Prevent overbooking
+
+4️⃣ Customer Management (CRM)
+
+Customer profiles
+
+Contact info
+
+Nationality / passport fields
+
+Booking history
+
+Internal notes
+
+5️⃣ Staff & Resources
+
+Staff (guides, drivers, crew)
+
+Availability tracking
+
+Vehicle & equipment inventory
+
+Assignment per tour/date
+
+6️⃣ Payments & Invoicing (IMPORTANT)
+Payment Providers
+
+✅ PayPal (international cards)
+
+✅ Paymob (local cards, wallets, kiosks)
+
+❌ Do NOT use Stripe
+
+Payment Features
+
+Payment intent creation
+
+Partial payments (deposit / remaining balance)
+
+Payment status tracking:
+
+Pending
+
+Paid
+
+Failed
+
+Refunded
+
+Webhook handling for PayPal & Paymob
+
+Link payments to bookings
+
+Generate invoices and receipts
+
+7️⃣ Financial Management
+
+Revenue per tour
+
+Daily / monthly income
+
+Outstanding balances
+
+Refund tracking
+
+Tax & service fee handling
+
+8️⃣ Reports & Analytics
+
+Bookings per date / tour
+
+Revenue reports
+
+Payment method breakdown
+
+Export to CSV / Excel
+
+9️⃣ Settings & Admin
+
+Company profile
+
+Currency (EGP + USD support)
+
+Tax & service fees
+
+Payment provider credentials
+
+Notification templates
+
+🛠️ Tech Stack (Required)
+Frontend
+
+Next.js (App Router)
+
+TypeScript
+
+Tailwind CSS
+
+shadcn/ui
+
+React Hook Form
+
+Zod
+
+Backend
+
+Node.js
+
+Next.js API Routes
+
+PostgreSQL
+
+Prisma ORM
+
+JWT Authentication
+
+💳 Payment Integration Details
+Paymob
+
+Use Paymob APIs for:
+
+Authentication token
+
+Order creation
+
+Payment key generation
+
+Transaction callbacks
+
+Handle EGP currency properly
+
+Secure webhook validation
+
+PayPal
+
+Use PayPal REST APIs
+
+Create orders & capture payments
+
+Handle webhooks
+
+Support USD payments
+
+🎨 UI/UX Requirements
+
+Professional admin dashboard
+
+Payment status badges
+
+Clear invoice views
+
+Booking-payment linkage UI
+
+Dark / light mode
+
+Responsive admin UI
+
+🔐 Security
+
+Secure env variables
+
+Signed webhooks
+
+Role-based access
+
+Input validation everywhere
+
+📂 Architecture
+
+Modular codebase
+
+Payment providers abstracted behind a service layer:
+
+payment.service.ts
+
+paypal.provider.ts
+
+paymob.provider.ts
+
+📦 Deliverables
+
+Fully functional ERP MVP
+
+Database schema with payments
+
+Seeded test data
+
+Example bookings with payments
+
+Clean, readable, scalable code
+
+❌ Constraints
+
+❌ No Stripe
+❌ No mock payment logic
+❌ No hardcoded secrets
+❌ No single-file backend
+
+✅ Success Criteria
+
+The system should feel like:
+
+“A real tourism ERP that can accept local and international payments safely and scale.”
+
+🔁 Future-Ready (Optional)
+
+Multi-branch companies
+
+Multi-currency expansion
+
+Public booking portal
+
+Accounting software integration
