@@ -3,14 +3,19 @@ import { useBookings } from "@/hooks/use-bookings";
 import { useCustomers } from "@/hooks/use-customers";
 import { StatCard } from "@/components/StatCard";
 import { PageHeader } from "@/components/PageHeader";
-import { Users, CalendarCheck, Banknote, Map, MoreHorizontal } from "lucide-react";
+import { Users, CalendarCheck, Banknote, Map, FileDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const { data: tours } = useTours();
   const { data: bookings } = useBookings();
   const { data: customers } = useCustomers();
+
+  const handleExport = () => {
+    window.location.href = "/api/bookings/export";
+  };
 
   // Simple analytics calculation
   const totalRevenue = bookings?.reduce((acc, curr) => acc + curr.totalAmount, 0) || 0;
@@ -28,7 +33,12 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <PageHeader title="Dashboard" description="Overview of your tourism business" />
+      <PageHeader title="Dashboard" description="Overview of your tourism business">
+        <Button onClick={handleExport} className="gap-2">
+          <FileDown className="h-4 w-4" />
+          Export Report
+        </Button>
+      </PageHeader>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard

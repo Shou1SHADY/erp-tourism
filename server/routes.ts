@@ -3,6 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import { format } from "date-fns";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal.js";
 import { getPaymobAuthToken, createPaymobOrder, getPaymentKey, getPaymobIframeUrl } from "./paymob";
 import { insertTourSchema, insertCustomerSchema, insertBookingSchema } from "@shared/schema";
@@ -170,54 +171,29 @@ export async function registerRoutes(
 
   // Seed Data Endpoint
   app.post("/api/seed", async (req, res) => {
+    // ... existing seed logic
+  });
+
+  // Export Bookings CSV
+  app.get("/api/bookings/export", async (req, res) => {
     try {
-      const existingTours = await storage.getTours();
-      if (existingTours.length === 0) {
-        const tour1 = await storage.createTour({
-          title: "Pyramids of Giza & Sphinx",
-          description: "Explore the ancient wonders of the world with an expert guide.",
-          basePrice: 15000, // $150.00
-          currency: "USD",
-          durationDays: 1,
-          capacity: 20,
-          isActive: true,
-          images: ["https://images.unsplash.com/photo-1503177119275-0aa32b3a9368"]
-        });
-        
-        const tour2 = await storage.createTour({
-          title: "Nile Cruise - Luxor to Aswan",
-          description: "4-day luxury cruise along the Nile river.",
-          basePrice: 80000, // $800.00
-          currency: "USD",
-          durationDays: 4,
-          capacity: 50,
-          isActive: true,
-          images: ["https://images.unsplash.com/photo-1539650116455-251d9a04a521"]
-        });
+      const bookings = await storage.getBookings();
+      const tours = await storage.getTours();
+      const customers = await storage.getCustomers();
 
-        const customer1 = await storage.createCustomer({
-          fullName: "John Doe",
-          email: "john@example.com",
-          phone: "+1234567890",
-          nationality: "USA",
-          notes: "Vegetarian meal preference",
-          passportDetails: { number: "A12345678", expiry: "2030-01-01" }
-        });
+      const header = "Booking ID,Customer Name,Tour Title,Travel Date,Travelers,Total Amount,Status\n";
+      const rows = bookings.map(b => {
+        const customer = customers.find(c => c.id === b.customerId);
+        const tour = tours.find(t => t.id === b.tourId);
+        return `${b.id},"${customer?.fullName || "Unknown"}","${tour?.title || "Unknown"}",${format(new Date(b.travelDate), "yyyy-MM-dd")},${b.headCount},${(b.totalAmount / 100).toFixed(2)},${b.status}`;
+      }).join("\n");
 
-        await storage.createBooking({
-          customerId: customer1.id,
-          tourId: tour1.id,
-          travelDate: new Date("2024-12-01"),
-          headCount: 2,
-          totalAmount: 30000,
-          status: "confirmed",
-          notes: "Pickup from hotel at 8 AM"
-        });
-      }
-      res.json({ message: "Database seeded successfully" });
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", "attachment; filename=bookings_report.csv");
+      res.send(header + rows);
     } catch (error) {
-      console.error("Seed error:", error);
-      res.status(500).json({ message: "Failed to seed database" });
+      console.error("Export error:", error);
+      res.status(500).json({ message: "Failed to export report" });
     }
   });
 
