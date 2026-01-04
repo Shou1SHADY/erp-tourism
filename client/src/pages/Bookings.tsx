@@ -74,7 +74,7 @@ export default function Bookings() {
                   <TableCell className="text-primary font-medium">#{booking.tourId}</TableCell>
                   <TableCell>#{booking.customerId}</TableCell>
                   <TableCell>{format(new Date(booking.travelDate), 'MMM d, yyyy')}</TableCell>
-                  <TableCell>{booking.headCount}</TableCell>
+                  <TableCell>{booking.headCount || 0}</TableCell>
                   <TableCell>${(booking.totalAmount / 100).toLocaleString()}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={

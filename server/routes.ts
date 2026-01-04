@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
+import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal.js";
 import { getPaymobAuthToken, createPaymobOrder, getPaymentKey, getPaymobIframeUrl } from "./paymob";
 import { insertTourSchema, insertCustomerSchema, insertBookingSchema } from "@shared/schema";
 

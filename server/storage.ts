@@ -65,12 +65,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTour(insertTour: InsertTour): Promise<Tour> {
-    const [tour] = await db.insert(tours).values(insertTour).returning();
+    // Explicitly handle images array to avoid type issues with jsonb
+    const [tour] = await db.insert(tours).values({
+      ...insertTour,
+      images: insertTour.images as any
+    }).returning();
     return tour;
   }
 
   async updateTour(id: number, updates: Partial<InsertTour>): Promise<Tour | undefined> {
-    const [updated] = await db.update(tours).set(updates).where(eq(tours.id, id)).returning();
+    const [updated] = await db.update(tours).set({
+      ...updates,
+      images: updates.images as any
+    }).where(eq(tours.id, id)).returning();
     return updated;
   }
 
